@@ -1,2 +1,2 @@
-# GarlicLang
-Multi purpose embeded programming language
+# Garlic
+Multi purpose embeded programming language.
