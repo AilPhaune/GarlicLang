@@ -2,6 +2,8 @@
 #include "Parser.h"
 #include <iostream>
 
+#define NOT_IMPLEMENTED res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::NOT_IMPLEMENTED, "Not implemented !", this->token->pos)))
+
 GParsingResult::GParsingResult() : error(nullptr), node(nullptr) {}
 GParsingResult::~GParsingResult() {
 	this->error = nullptr;
@@ -140,9 +142,11 @@ std::shared_ptr<GParsingResult> GParser::makeStatementBase() {
 	}
 	if (this->token->type == GTokenType::COMM_AT) {
 		// TODO
+		return NOT_IMPLEMENTED;
 	}
 	if (this->token->type == GTokenType::KEYWORD) {
 		// TODO
+		return NOT_IMPLEMENTED;
 	}
 	if (this->token->type == GTokenType::LBRACE) {
 		std::shared_ptr<GNode> node = res->reg(this->makeStatementBase());
