@@ -60,7 +60,7 @@ struct GLexingResult : public std::enable_shared_from_this<GLexingResult> {
 		std::shared_ptr<GLexingResult> push(std::shared_ptr<GTokenResult> token);
 		bool hasError();
 		std::shared_ptr<GarlicError> getError();
-		std::shared_ptr<std::vector<GTokenResult>> getTokens();
+		std::vector<std::shared_ptr<GToken>> getTokens();
 };
 
 class GLexer {

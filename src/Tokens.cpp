@@ -58,8 +58,12 @@ bool GLexingResult::hasError() {
 std::shared_ptr<GarlicError> GLexingResult::getError() {
 	return this->error;
 }
-std::shared_ptr<std::vector<GTokenResult>> GLexingResult::getTokens() {
-	return this->tokens;
+std::vector<std::shared_ptr<GToken>> GLexingResult::getTokens() {
+	std::vector<std::shared_ptr<GToken>> res = std::vector<std::shared_ptr<GToken>>(this->tokens->size());
+	for (uint64_t i = 0; i < res.size(); i++) {
+		res[i] = this->tokens->at(i).getToken();
+	}
+	return res;
 }
 
 GLexer::GLexer(std::string file, std::string content): file(file), content(content) {
