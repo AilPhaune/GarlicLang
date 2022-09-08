@@ -33,3 +33,49 @@ Maybe print the ast ?
 std::string s = GNode::toString(ast);
 std::cout << s << std::endl;
 ```
+
+# Implementation status
+- means implemented
+
+**[x] means not yet implemented**
+
+### [Lexer / Scanner](https://en.wikipedia.org/wiki/Lexical_analysis#Scanner)
+- All symbols and operators
+- Numbers (integers and decimals), number type hints
+- Identifiers and keyword
+
+**[x] Hexadecimal, octal, and binary litterals**
+
+### [Parser](https://en.wikipedia.org/wiki/Parsing#Parser)
+- All operators
+- Function calls (parenthesis operator)
+- Statements
+- Comparisons
+- Litterals (string, char, numbers, identifiers, **[x] boolean litteral**, **[x] bigint litterals**)
+- Assignment and multi-assignment (assignment of multiple variables and multiple values)
+
+**[x] Variable declaration**
+
+**[x] If, Else, Else If statements**
+
+**[x] For, While, Do While loops**
+
+**[x] Class, Interface, Enum, Annotation declaration**
+
+**[x] Function, Method declaration**
+
+**[x] Operator overloading**
+
+**[x] Annotating variables, functions, methods, classes, interfaces, enums, other annotations**
+
+### [Symbol Table](https://en.wikipedia.org/wiki/Symbol_table)
+**[x] Not implemented yet**
+
+### [Intermediate Representation](https://en.wikipedia.org/wiki/Intermediate_representation#Intermediate_representation)
+**[x] Not implemented yet**
+
+### [Optimizer](https://en.wikipedia.org/wiki/Program_optimization)
+**[x] Not implemented yet**
+
+### [Interpreter](https://en.wikipedia.org/wiki/Interpreter_(computing))
+**[x] Not implemented yet**
