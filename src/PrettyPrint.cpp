@@ -154,3 +154,46 @@ std::shared_ptr<PrettyPrint> GDotAccessorNode::prettyPrint() {
 		})
 	));
 }
+
+std::shared_ptr<PrettyPrint> GIfStatementNode::prettyPrint() {
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		"IF STATEMENT",
+		std::vector<std::shared_ptr<PrettyPrint>>({
+			this->condition->prettyPrint(),
+			this->conditionTrue->prettyPrint(),
+			this->conditionFalse != nullptr ? this->conditionFalse->prettyPrint() : nullptr
+		})
+	));
+}
+
+std::shared_ptr<PrettyPrint> GForLoopNode::prettyPrint() {
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		"FOR LOOP",
+		std::vector<std::shared_ptr<PrettyPrint>>({
+			this->initialize != nullptr ? this->initialize->prettyPrint() : nullptr,
+			this->condition != nullptr ? this->condition->prettyPrint() : nullptr,
+			this->increment != nullptr ? this->increment->prettyPrint() : nullptr,
+			this->body != nullptr ? this->body->prettyPrint() : nullptr
+		})
+	));
+}
+
+std::shared_ptr<PrettyPrint> GWhileLoopNode::prettyPrint() {
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		"WHILE LOOP",
+		std::vector<std::shared_ptr<PrettyPrint>>({
+			this->condition != nullptr ? this->condition->prettyPrint() : nullptr,
+			this->body != nullptr ? this->body->prettyPrint() : nullptr
+		})
+	));
+}
+
+std::shared_ptr<PrettyPrint> GDoWhileLoopNode::prettyPrint() {
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		"DO WHILE LOOP",
+		std::vector<std::shared_ptr<PrettyPrint>>({
+			this->condition != nullptr ? this->condition->prettyPrint() : nullptr,
+			this->body != nullptr ? this->body->prettyPrint() : nullptr
+		})
+	));
+}

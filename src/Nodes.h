@@ -18,10 +18,12 @@ struct GTernaryNode;
 struct GParenthesisOperatorNode;
 struct GBracketOperatorNode;
 struct GDotAccessorNode;
+struct GIfStatementNode;
 
 enum GNodeType {
 	NODE_UNKNOWN, NODE_BIN_OP, NODE_SETTER, NODE_UNARY_OP, NODE_COMP_OP, NODE_VALUE, NODE_IDENTIFIER, NODE_TUPLE, NODE_LIST,
-	NODE_NON_GARLIC, NODE_TERNARY, NODE_PARENTHESIS_OPERATOR, NODE_BRACKET_OPERATOR, NODE_DOT_ACCESSOR,
+	NODE_NON_GARLIC, NODE_TERNARY, NODE_PARENTHESIS_OPERATOR, NODE_BRACKET_OPERATOR, NODE_DOT_ACCESSOR, NODE_IF_STATEMENT,
+	NODE_FOR_LOOP, NODE_WHILE_LOOP, NODE_DO_WHILE_LOOP
 };
 
 struct PrettyPrint {
@@ -197,5 +199,49 @@ struct GDotAccessorNode : public GNode {
 		~GDotAccessorNode();
 
 		GNodeType getType() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GIfStatementNode : public GNode {
+	public:
+		std::shared_ptr<GNode> condition, conditionTrue, conditionFalse;
+		GIfStatementNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> conditionTrue, std::shared_ptr<GNode> conditionFalse, std::shared_ptr<GPosition> pos);
+		~GIfStatementNode();
+
+		GNodeType getType() override;
+		bool needsSemicolon() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GForLoopNode : public GNode {
+	public:
+		std::shared_ptr<GNode> initialize, condition, increment, body;
+		GForLoopNode(std::shared_ptr<GNode> initialize, std::shared_ptr<GNode> condition, std::shared_ptr<GNode> increment, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos);
+		~GForLoopNode();
+
+		GNodeType getType() override;
+		bool needsSemicolon() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GWhileLoopNode : public GNode {
+	public:
+		std::shared_ptr<GNode> condition, body;
+		GWhileLoopNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos);
+		~GWhileLoopNode();
+
+		GNodeType getType() override;
+		bool needsSemicolon() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GDoWhileLoopNode : public GNode {
+	public:
+		std::shared_ptr<GNode> condition, body;
+		GDoWhileLoopNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos);
+		~GDoWhileLoopNode();
+
+		GNodeType getType() override;
+		bool needsSemicolon() override;
 		std::shared_ptr<PrettyPrint> prettyPrint() override;
 };

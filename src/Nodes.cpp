@@ -179,9 +179,52 @@ GBracketOperatorNode::~GBracketOperatorNode() {
 }
 
 GDotAccessorNode::GDotAccessorNode(std::shared_ptr<GNode> value, std::string accessor, std::shared_ptr<GPosition> pos) :
-value(value), accessor(accessor), GNode(pos) {}
+	value(value), accessor(accessor), GNode(pos) {}
 GDotAccessorNode::~GDotAccessorNode() {
 	this->value = nullptr;
+}
+
+GIfStatementNode::GIfStatementNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> conditionTrue, std::shared_ptr<GNode> conditionFalse, std::shared_ptr<GPosition> pos) :
+	condition(condition), conditionFalse(conditionFalse), conditionTrue(conditionTrue), GNode(pos) {};
+GIfStatementNode::~GIfStatementNode() {
+	this->condition = nullptr;
+	this->conditionFalse = nullptr;
+	this->conditionTrue = nullptr;
+}
+bool GIfStatementNode::needsSemicolon() {
+	return false;
+}
+
+GForLoopNode::GForLoopNode(std::shared_ptr<GNode> initialize, std::shared_ptr<GNode> condition, std::shared_ptr<GNode> increment, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos) :
+	initialize(initialize), condition(condition), increment(increment), body(body), GNode(pos) {};
+GForLoopNode::~GForLoopNode() {
+	this->initialize = nullptr;
+	this->condition = nullptr;
+	this->increment = nullptr;
+	this->body = nullptr;
+}
+bool GForLoopNode::needsSemicolon() {
+	return false;
+}
+
+GWhileLoopNode::GWhileLoopNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos) :
+	condition(condition), body(body), GNode(pos) {};
+GWhileLoopNode::~GWhileLoopNode() {
+	this->condition = nullptr;
+	this->body = nullptr;
+}
+bool GWhileLoopNode::needsSemicolon() {
+	return false;
+}
+
+GDoWhileLoopNode::GDoWhileLoopNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> body, std::shared_ptr<GPosition> pos) :
+	condition(condition), body(body), GNode(pos) {};
+GDoWhileLoopNode::~GDoWhileLoopNode() {
+	this->condition = nullptr;
+	this->body = nullptr;
+}
+bool GDoWhileLoopNode::needsSemicolon() {
+	return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -241,4 +284,20 @@ GNodeType GBracketOperatorNode::getType() {
 
 GNodeType GDotAccessorNode::getType() {
 	return GNodeType::NODE_DOT_ACCESSOR;
+}
+
+GNodeType GIfStatementNode::getType() {
+	return GNodeType::NODE_IF_STATEMENT;
+}
+
+GNodeType GForLoopNode::getType() {
+	return GNodeType::NODE_FOR_LOOP;
+}
+
+GNodeType GWhileLoopNode::getType() {
+	return GNodeType::NODE_WHILE_LOOP;
+}
+
+GNodeType GDoWhileLoopNode::getType() {
+	return GNodeType::NODE_DO_WHILE_LOOP;
 }
