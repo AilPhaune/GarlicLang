@@ -133,7 +133,7 @@ std::string GLexer::IDENTIFIERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRS
 std::vector<std::string> GLexer::KEYWORDS = {
 	"int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float", "double", "bigint", "complex", "new",
 	"for", "while", "if", "else", "break", "continue", "return", "def", "let", "const", "public", "private", "protected", "static",
-	"write", "html", "void", "true", "false", "this", "char"
+	"class", "interface", "enum", "annotation",	"write", "html", "void", "true", "false", "this", "char"
 };
 
 void GLexer::advance() {
