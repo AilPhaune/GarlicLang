@@ -53,10 +53,9 @@ std::cout << s << std::endl;
 - Comparisons
 - Litterals (string, char, numbers, identifiers, **[x] boolean litteral**, **[x] bigint litterals**)
 - Assignment and multi-assignment (assignment of multiple variables and multiple values)
+- If, Else, Else If statements
 
 **[x] Variable declaration**
-
-**[x] If, Else, Else If statements**
 
 **[x] For, While, Do While loops**
 
