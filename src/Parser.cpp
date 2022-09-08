@@ -145,8 +145,22 @@ std::shared_ptr<GParsingResult> GParser::makeStatementBase() {
 		return NOT_IMPLEMENTED;
 	}
 	if (this->token->type == GTokenType::KEYWORD) {
-		// TODO
-		return NOT_IMPLEMENTED;
+		if (this->token->value == "if") {
+			return this->makeIfStatement();
+		}
+		if (this->token->value == "for") {
+			return this->makeForLoop();
+		}
+		if (this->token->value == "while") {
+			return this->makeWhileLoop();
+		}
+		if (this->token->value == "do") {
+			return this->makeDoWhileLoop();
+		}
+		std::vector<std::string> declarationKeywords = { "def", "let", "const", "public", "private", "protected", "static", "class", "interface", "enum", "annotation" };
+		if (std::find(declarationKeywords.begin(), declarationKeywords.end(), this->token->value) != declarationKeywords.end()) {
+			return this->makeDeclaration();
+		}
 	}
 	if (this->token->type == GTokenType::LBRACE) {
 		std::shared_ptr<GNode> node = res->reg(this->makeStatementBase());
@@ -735,4 +749,24 @@ std::shared_ptr<GParsingResult> GParser::makeSetter(std::shared_ptr<GNode> node)
 		return res->success(std::shared_ptr<GNode>(new GSetterNode(node, value, it->second, pos)));
 	}
 	return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_ASSIGNMENT_TOKEN, "Expected an assignment token ('=', '+=', '-=', ...), gor'" + GToken::safeValue(this->token) + "'", this->token->pos)));
+}
+std::shared_ptr<GParsingResult> GParser::makeIfStatement() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeForLoop() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeWhileLoop() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeDoWhileLoop() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeDeclaration() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
 }

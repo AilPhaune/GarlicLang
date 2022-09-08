@@ -54,6 +54,11 @@ class GParser {
 		std::shared_ptr<GParsingResult> makeBracketOperator(std::shared_ptr<GNode> atom);
 		std::shared_ptr<GParsingResult> makeDotAccessor(std::shared_ptr<GNode> atom);
 		std::shared_ptr<GParsingResult> makeSetter(std::shared_ptr<GNode> node);
+		std::shared_ptr<GParsingResult> makeIfStatement();
+		std::shared_ptr<GParsingResult> makeForLoop();
+		std::shared_ptr<GParsingResult> makeWhileLoop();
+		std::shared_ptr<GParsingResult> makeDoWhileLoop();
+		std::shared_ptr<GParsingResult> makeDeclaration();
 	public:
 		GParser(std::vector<std::shared_ptr<GToken>> tokens);
 		~GParser();
