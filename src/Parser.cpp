@@ -163,7 +163,7 @@ std::shared_ptr<GParsingResult> GParser::makeStatementBase() {
 		}
 	}
 	if (this->token->type == GTokenType::LBRACE) {
-		std::shared_ptr<GNode> node = res->reg(this->makeStatementBase());
+		std::shared_ptr<GNode> node = res->reg(this->makeStatement());
 		if (res->error != nullptr) {
 			return res;
 		}
@@ -752,7 +752,36 @@ std::shared_ptr<GParsingResult> GParser::makeSetter(std::shared_ptr<GNode> node)
 }
 std::shared_ptr<GParsingResult> GParser::makeIfStatement() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	return NOT_IMPLEMENTED;
+	if (this->token->value != "if") {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'if(condition) expr [else if(cond) expr]... [else expr]' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::shared_ptr<GPosition> startPos = this->token->pos;
+	this->advance();
+	if (this->token->type != GTokenType::LPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected '(' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> condition = res->reg(this->makeComplexExpression());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != GTokenType::RPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ')' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> conditionTrue = res->reg(this->makeStatements());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != KEYWORD || this->token->value != "else") {
+		return res->success(std::shared_ptr<GNode>(new GIfStatementNode(condition, conditionTrue, nullptr, GPosition::endsAt(startPos, conditionTrue->pos))));
+	}
+	this->advance();
+	std::shared_ptr<GNode> conditionFalse = res->reg(this->makeStatements());
+	if (res->error != nullptr) {
+		return res;
+	}
+	return res->success(std::shared_ptr<GNode>(new GIfStatementNode(condition, conditionTrue, conditionFalse, GPosition::endsAt(startPos, conditionFalse->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeForLoop() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
