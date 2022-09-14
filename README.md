@@ -51,13 +51,12 @@ std::cout << s << std::endl;
 - Function calls (parenthesis operator)
 - Statements
 - Comparisons
-- Litterals (string, char, numbers, identifiers, **[x] boolean litteral**, **[x] bigint litterals**)
+- Litterals (string, char, numbers, identifiers, boolean litteral, **[x] bigint litterals**)
 - Assignment and multi-assignment (assignment of multiple variables and multiple values)
 - If, Else, Else If statements
+- For, While and Do While loops
 
 **[x] Variable declaration**
-
-**[x] For, While, Do While loops**
 
 **[x] Class, Interface, Enum, Annotation declaration**
 
