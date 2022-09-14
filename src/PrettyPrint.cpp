@@ -40,7 +40,7 @@ std::shared_ptr<PrettyPrint> GValueNode::prettyPrint() {
 		// TODO
 	}
 	else if (this->type == GValueType::BOOLEAN) {
-		ret << " bool { " << *((bool*)(this->value.get()));
+		ret << " bool { " << (*((bool*)(this->value.get())) ? "true" : "false");
 	}
 	else if (this->type == GValueType::CHAR) {
 		ret << " char { " << *((char*)(this->value.get()));
