@@ -58,6 +58,7 @@ class GParser {
 		std::shared_ptr<GParsingResult> makeForLoop();
 		std::shared_ptr<GParsingResult> makeWhileLoop();
 		std::shared_ptr<GParsingResult> makeDoWhileLoop();
+		std::shared_ptr<GParsingResult> makeScope();
 		std::shared_ptr<GParsingResult> makeDeclaration();
 	public:
 		GParser(std::vector<std::shared_ptr<GToken>> tokens);

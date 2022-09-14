@@ -19,11 +19,12 @@ struct GParenthesisOperatorNode;
 struct GBracketOperatorNode;
 struct GDotAccessorNode;
 struct GIfStatementNode;
+struct GScopeNode;
 
 enum GNodeType {
 	NODE_UNKNOWN, NODE_BIN_OP, NODE_SETTER, NODE_UNARY_OP, NODE_COMP_OP, NODE_VALUE, NODE_IDENTIFIER, NODE_TUPLE, NODE_LIST,
 	NODE_NON_GARLIC, NODE_TERNARY, NODE_PARENTHESIS_OPERATOR, NODE_BRACKET_OPERATOR, NODE_DOT_ACCESSOR, NODE_IF_STATEMENT,
-	NODE_FOR_LOOP, NODE_WHILE_LOOP, NODE_DO_WHILE_LOOP
+	NODE_FOR_LOOP, NODE_WHILE_LOOP, NODE_DO_WHILE_LOOP, NODE_SCOPE
 };
 
 struct PrettyPrint {
@@ -242,6 +243,15 @@ struct GDoWhileLoopNode : public GNode {
 		~GDoWhileLoopNode();
 
 		GNodeType getType() override;
-		bool needsSemicolon() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GScopeNode : public GNode {
+	public:
+		std::vector<std::string> scope;
+		GScopeNode(std::vector<std::string> scope, std::shared_ptr<GPosition> pos);
+		~GScopeNode();
+
+		GNodeType getType() override;
 		std::shared_ptr<PrettyPrint> prettyPrint() override;
 };

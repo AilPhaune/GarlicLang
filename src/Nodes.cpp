@@ -8,6 +8,9 @@ PrettyPrint::~PrettyPrint() {
 }
 
 std::string GNode::toString(std::shared_ptr<PrettyPrint> map, uint32_t spaces) {
+	if (map == nullptr) {
+		return "NULL";
+	}
 	std::stringstream ret;
 	ret << map->name;
 	std::vector<std::shared_ptr<PrettyPrint>>::iterator it = map->children.begin();
@@ -223,9 +226,10 @@ GDoWhileLoopNode::~GDoWhileLoopNode() {
 	this->condition = nullptr;
 	this->body = nullptr;
 }
-bool GDoWhileLoopNode::needsSemicolon() {
-	return false;
-}
+
+GScopeNode::GScopeNode(std::vector<std::string> scope, std::shared_ptr<GPosition> pos): scope(scope), GNode(pos) {}
+GScopeNode::~GScopeNode() {}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                       NODE TYPES                                                       //
@@ -300,4 +304,8 @@ GNodeType GWhileLoopNode::getType() {
 
 GNodeType GDoWhileLoopNode::getType() {
 	return GNodeType::NODE_DO_WHILE_LOOP;
+}
+
+GNodeType GScopeNode::getType() {
+	return GNodeType::NODE_SCOPE;
 }

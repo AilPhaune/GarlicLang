@@ -197,3 +197,20 @@ std::shared_ptr<PrettyPrint> GDoWhileLoopNode::prettyPrint() {
 		})
 	));
 }
+
+std::shared_ptr<PrettyPrint> GScopeNode::prettyPrint() {
+	std::stringstream str;
+	str << "SCOPE { ";
+	size_t len = this->scope.size();
+	for (size_t i = 0; i + 1 < len; i++) {
+		str << this->scope.at(i) << ".";
+	}
+	if (len > 0) {
+		str << this->scope.at(len - 1);
+	}
+	str << " }";
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		str.str(),
+		std::vector<std::shared_ptr<PrettyPrint>>()
+	));
+}

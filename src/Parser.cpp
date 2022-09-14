@@ -178,12 +178,11 @@ std::shared_ptr<GParsingResult> GParser::makeStatementBase() {
 std::shared_ptr<GParsingResult> GParser::makeComplexExpression() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
 	this->push();
-	/*
 	std::shared_ptr<GNode> maybeScope = res->reg(this->makeScope());
 	if (maybeScope->getType() == GNodeType::NODE_SCOPE && res->error == nullptr) {
 		// TODO scope
+		return NOT_IMPLEMENTED;
 	}
-	*/
 	this->pop();
 	std::shared_ptr<GNode> node = res->reg(this->makeBooleanExpression());
 	if (res->error != nullptr) {
@@ -906,6 +905,10 @@ std::shared_ptr<GParsingResult> GParser::makeDoWhileLoop() {
 	return res->success(std::shared_ptr<GNode>(new GDoWhileLoopNode(condition, body, GPosition::endsAt(startPos, this->token->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeDeclaration() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeScope() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
 	return NOT_IMPLEMENTED;
 }
