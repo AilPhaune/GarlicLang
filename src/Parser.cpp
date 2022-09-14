@@ -598,6 +598,18 @@ std::shared_ptr<GParsingResult> GParser::makeAtom() {
 		return res->success(std::shared_ptr<GNode>(new GIdentifierNode(str, tokPos)));
 	}
 
+	// Generate GValueNode for token of type identifier
+	if (this->token->type == GTokenType::KEYWORD) {
+		std::string str = this->token->value;
+		this->advance();
+		if (str == "true") {
+			return res->success(std::shared_ptr<GNode>(new GValueNode(std::shared_ptr<void>(new bool(true)), GValueType::BOOLEAN, tokPos)));
+		}
+		if (str == "false") {
+			return res->success(std::shared_ptr<GNode>(new GValueNode(std::shared_ptr<void>(new bool(false)), GValueType::BOOLEAN, tokPos)));
+		}
+	}
+
 	if (this->token->type == GTokenType::LPAREN) {
 		this->advance();
 		std::pair<std::vector<std::shared_ptr<GNode>>, std::shared_ptr<GarlicError>> nodes = this->makeCommaSeparatedValues();
@@ -748,11 +760,11 @@ std::shared_ptr<GParsingResult> GParser::makeSetter(std::shared_ptr<GNode> node)
 		std::shared_ptr<GPosition> pos = GPosition::endsAt(node->pos, value->pos);
 		return res->success(std::shared_ptr<GNode>(new GSetterNode(node, value, it->second, pos)));
 	}
-	return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_ASSIGNMENT_TOKEN, "Expected an assignment token ('=', '+=', '-=', ...), gor'" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_ASSIGNMENT_TOKEN, "Expected an assignment token ('=', '+=', '-=', ...), got'" + GToken::safeValue(this->token) + "'", this->token->pos)));
 }
 std::shared_ptr<GParsingResult> GParser::makeIfStatement() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	if (this->token->value != "if") {
+	if (this->token->type != GTokenType::KEYWORD && this->token->value != "if") {
 		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'if(condition) expr [else if(cond) expr]... [else expr]' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
 	}
 	std::shared_ptr<GPosition> startPos = this->token->pos;
@@ -785,15 +797,113 @@ std::shared_ptr<GParsingResult> GParser::makeIfStatement() {
 }
 std::shared_ptr<GParsingResult> GParser::makeForLoop() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	return NOT_IMPLEMENTED;
+	if (this->token->type != GTokenType::KEYWORD && this->token->value != "for") {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'for(initialize; confition; increment) expr' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::shared_ptr<GToken> tokenFor = this->token;
+	this->advance();
+	if (this->token->type != GTokenType::LPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected '(' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> intitialize = nullptr;
+	if (this->token->type != GTokenType::SEMICOLON) {
+		intitialize = res->reg(this->makeComplexExpression());
+		if (res->error != nullptr) {
+			return res;
+		}
+	}
+	if (this->token->type != GTokenType::SEMICOLON) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ';' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> condition = nullptr;
+	if (this->token->type != GTokenType::SEMICOLON) {
+		condition = res->reg(this->makeComplexExpression());
+		if (res->error != nullptr) {
+			return res;
+		}
+	}
+	if (this->token->type != GTokenType::SEMICOLON) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ';' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> increment = nullptr;
+	if (this->token->type != GTokenType::RPAREN) {
+		increment = res->reg(this->makeComplexExpression());
+		if (res->error != nullptr) {
+			return res;
+		}
+	}
+	if (this->token->type != GTokenType::RPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ')' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> body = res->reg(this->makeStatements());
+	if (res->error != nullptr) {
+		return res;
+	}
+	return res->success(std::shared_ptr<GNode>(new GForLoopNode(intitialize, condition, increment, body, GPosition::endsAt(tokenFor->pos, body->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeWhileLoop() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	return NOT_IMPLEMENTED;
+	if (this->token->type != GTokenType::KEYWORD && this->token->value != "while") {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'while(condition) body' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::shared_ptr<GPosition> startPos = this->token->pos;
+	this->advance();
+	if (this->token->type != GTokenType::LPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected '(' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> condition = res->reg(this->makeComplexExpression());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != GTokenType::RPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ')' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> body = res->reg(this->makeStatements());
+	if (res->error != nullptr) {
+		return res;
+	}
+	return res->success(std::shared_ptr<GNode>(new GWhileLoopNode(condition, body, GPosition::endsAt(startPos, body->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeDoWhileLoop() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	return NOT_IMPLEMENTED;
+	if (this->token->type != GTokenType::KEYWORD && this->token->value != "do") {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'do { body } while(condition);' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::shared_ptr<GPosition> startPos = this->token->pos;
+	this->advance();
+	if (this->token->type != GTokenType::LBRACE) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected '{' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::shared_ptr<GNode> body = res->reg(this->makeStatements());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != GTokenType::KEYWORD && this->token->value != "while") {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected 'while(condition) body' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	if (this->token->type != GTokenType::LPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected '(' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> condition = res->reg(this->makeComplexExpression());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != GTokenType::RPAREN) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ')' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	if (this->token->type != GTokenType::SEMICOLON) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Expected ';' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	return res->success(std::shared_ptr<GNode>(new GDoWhileLoopNode(condition, body, GPosition::endsAt(startPos, this->token->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeDeclaration() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
