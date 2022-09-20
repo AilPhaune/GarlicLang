@@ -181,10 +181,11 @@ GBracketOperatorNode::~GBracketOperatorNode() {
 	this->accessor = nullptr;
 }
 
-GDotAccessorNode::GDotAccessorNode(std::shared_ptr<GNode> value, std::string accessor, std::shared_ptr<GPosition> pos) :
+GDotAccessorNode::GDotAccessorNode(std::shared_ptr<GNode> value, std::shared_ptr<GNode> accessor, std::shared_ptr<GPosition> pos) :
 	value(value), accessor(accessor), GNode(pos) {}
 GDotAccessorNode::~GDotAccessorNode() {
 	this->value = nullptr;
+	this->accessor = nullptr;
 }
 
 GIfStatementNode::GIfStatementNode(std::shared_ptr<GNode> condition, std::shared_ptr<GNode> conditionTrue, std::shared_ptr<GNode> conditionFalse, std::shared_ptr<GPosition> pos) :

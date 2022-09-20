@@ -20,6 +20,7 @@ struct GParsingResult : public std::enable_shared_from_this<GParsingResult> {
 		std::shared_ptr<GNode> reg(std::shared_ptr<GParsingResult> res);
 		std::shared_ptr<GParsingResult> success(std::shared_ptr<GNode> node);
 		std::shared_ptr<GParsingResult> failure(std::shared_ptr<GarlicError> error);
+		void reset();
 };
 
 class GParser {

@@ -145,12 +145,9 @@ std::shared_ptr<PrettyPrint> GBracketOperatorNode::prettyPrint() {
 std::shared_ptr<PrettyPrint> GDotAccessorNode::prettyPrint() {
 	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
 		"DOT ACCESSOR",
-		std::vector<std::shared_ptr<PrettyPrint>>({ 
+		std::vector<std::shared_ptr<PrettyPrint>>({
 			this->value->prettyPrint(),
-			std::shared_ptr<PrettyPrint>(new PrettyPrint(
-				this->accessor, 
-				std::vector<std::shared_ptr<PrettyPrint>>()
-			))
+			this->accessor->prettyPrint()
 		})
 	));
 }

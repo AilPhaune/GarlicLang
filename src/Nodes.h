@@ -194,9 +194,8 @@ struct GBracketOperatorNode : public GNode {
 
 struct GDotAccessorNode : public GNode {
 	public:
-		std::shared_ptr<GNode> value;
-		std::string accessor;
-		GDotAccessorNode(std::shared_ptr<GNode> value, std::string accessor, std::shared_ptr<GPosition> pos);
+		std::shared_ptr<GNode> value, accessor;
+		GDotAccessorNode(std::shared_ptr<GNode> value, std::shared_ptr<GNode> accessor, std::shared_ptr<GPosition> pos);
 		~GDotAccessorNode();
 
 		GNodeType getType() override;

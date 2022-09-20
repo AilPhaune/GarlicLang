@@ -26,6 +26,10 @@ std::shared_ptr<GParsingResult> GParsingResult::failure(std::shared_ptr<GarlicEr
 	this->error = err;
 	return shared_from_this();
 }
+void GParsingResult::reset() {
+	this->error = nullptr;
+	this->node = nullptr;
+}
 
 GParser::GParser(std::vector<std::shared_ptr<GToken>> tokens): tokens(tokens), history(std::stack<int>()) {
 	this->refresh();
@@ -177,13 +181,6 @@ std::shared_ptr<GParsingResult> GParser::makeStatementBase() {
 }
 std::shared_ptr<GParsingResult> GParser::makeComplexExpression() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	this->push();
-	std::shared_ptr<GNode> maybeScope = res->reg(this->makeScope());
-	if (maybeScope->getType() == GNodeType::NODE_SCOPE && res->error == nullptr) {
-		// TODO scope
-		return NOT_IMPLEMENTED;
-	}
-	this->pop();
 	std::shared_ptr<GNode> node = res->reg(this->makeBooleanExpression());
 	if (res->error != nullptr) {
 		return res;
@@ -391,6 +388,22 @@ std::shared_ptr<GParsingResult> GParser::makeCall() {
 std::shared_ptr<GParsingResult> GParser::makeAtom() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
 	std::shared_ptr<GPosition> tokPos = this->token->pos;
+
+	this->push();
+	std::shared_ptr<GNode> maybeScope = res->reg(this->makeScope());
+	if (res->error == nullptr && maybeScope->getType() == GNodeType::NODE_SCOPE) {
+		std::vector<GTokenType> setter_toks = { EQ, PLUS_EQ, MINUS_EQ, PERCENT_EQ, SLASH_EQ, STAR_EQ, CARET_EQ, PIPE_EQ, AMPERSAND_EQ, LT2_EQ, GT2_EQ, LT3_EQ, GT3_EQ };
+		if (std::find(setter_toks.begin(), setter_toks.end(), this->token->type) != setter_toks.end()) {
+			std::shared_ptr<GNode> node = res->reg(this->makeSetter(maybeScope));
+			if (res->error != nullptr) {
+				return res;
+			}
+			return res->success(node);
+		}
+		return res->success(maybeScope);
+	}
+	res->reset();
+	this->pop();
 
 	// Generate GValueNode for token of type int8
 	if (this->token->type == GTokenType::LITTERAL_INT8) {
@@ -713,10 +726,13 @@ std::shared_ptr<GParsingResult> GParser::makeDotAccessor(std::shared_ptr<GNode> 
 	if (this->token->type != GTokenType::IDENTIFIER) {
 		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_DOT_ACCESSOR_MISSING_IDENTIFIER, "Expected identifier, got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
 	}
-	std::string accessor = this->token->value;
-	std::shared_ptr<GPosition> pos = this->token->pos;
-	this->advance();
-	std::shared_ptr<GDotAccessorNode> ret = std::shared_ptr<GDotAccessorNode>(new GDotAccessorNode(atom, accessor, GPosition::endsAt(atom->pos, pos)));
+
+	std::shared_ptr<GNode> scope = res->reg(this->makeScope());
+	if (res->error != nullptr) {
+		return res;
+	}
+	std::shared_ptr<GDotAccessorNode> ret = std::shared_ptr<GDotAccessorNode>(new GDotAccessorNode(atom, scope, GPosition::endsAt(atom->pos, scope->pos)));
+
 	std::vector<GTokenType> setter_toks = { EQ, PLUS_EQ, MINUS_EQ, PERCENT_EQ, SLASH_EQ, STAR_EQ, CARET_EQ, PIPE_EQ, AMPERSAND_EQ, LT2_EQ, GT2_EQ, LT3_EQ, GT3_EQ };
 	if (std::find(setter_toks.begin(), setter_toks.end(), this->token->type) != setter_toks.end()) {
 		std::shared_ptr<GNode> node = res->reg(this->makeSetter(ret));
@@ -910,5 +926,21 @@ std::shared_ptr<GParsingResult> GParser::makeDeclaration() {
 }
 std::shared_ptr<GParsingResult> GParser::makeScope() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
-	return NOT_IMPLEMENTED;
+	if (this->token->type != GTokenType::IDENTIFIER) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_EXPECTED_SCOPE, "Expected scope but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::vector<std::string> path;
+	std::shared_ptr<GPosition> pos = this->token->pos;
+	path.push_back(this->token->value);
+	this->advance();
+	while (this->token->type == GTokenType::DOT) {
+		this->advance();
+		if (this->token->type != GTokenType::IDENTIFIER) {
+			return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_EXPECTED_SCOPE, "Expected scope but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+		}
+		pos = GPosition::endsAt(pos, this->token->pos);
+		path.push_back(this->token->value);
+		this->advance();
+	}
+	return res->success(std::shared_ptr<GNode>(new GScopeNode(path, pos)));
 }
