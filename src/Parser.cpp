@@ -922,7 +922,43 @@ std::shared_ptr<GParsingResult> GParser::makeDoWhileLoop() {
 }
 std::shared_ptr<GParsingResult> GParser::makeDeclaration() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	if (this->token->type == GTokenType::KEYWORD) {
+		std::vector<std::string> types = { "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float", "double", "bigint", "complex", "char", "bool" };
+		if (std::find(types.begin(), types.end(), this->token->value) != types.end()) {
+			return NOT_IMPLEMENTED;
+		}
+		if (this->token->value == "let" || this->token->value == "const") {
+			bool isConst = this->token->value == "const";
+			this->advance();
+			return this->makeVariableDeclaration(isConst);
+		}
+		return NOT_IMPLEMENTED;
+	}
 	return NOT_IMPLEMENTED;
+}
+std::shared_ptr<GParsingResult> GParser::makeVariableDeclaration(bool isConst) {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	std::shared_ptr<GNode> type = res->reg(this->makeType());
+	if (res->error != nullptr) {
+		return res;
+	}
+	if (this->token->type != GTokenType::IDENTIFIER) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_EXPECTED_VARIABLE_OR_FIELD_NAME, "Expected variable or field name (identifier) but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	std::string name = this->token->value;
+	this->advance();
+	if (this->token->type == GTokenType::SEMICOLON) {
+		return res->success(std::shared_ptr<GNode>(new GVarDeclareNode(type, name, isConst, nullptr, GPosition::endsAt(type->pos, this->token->pos))));
+	}
+	if (this->token->type != GTokenType::EQ) {
+		return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_INCOMPLETE_VARIABLE_OR_FIELD_DECLARATION, "Expected ';' or '= value' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+	}
+	this->advance();
+	std::shared_ptr<GNode> value = res->reg(this->makeComplexExpression());
+	if (res->error != nullptr) {
+		return res;
+	}
+	return res->success(std::shared_ptr<GNode>(new GVarDeclareNode(type, name, isConst, value, GPosition::endsAt(type->pos, this->token->pos))));
 }
 std::shared_ptr<GParsingResult> GParser::makeScope() {
 	std::shared_ptr<GParsingResult> res = GParsingResult::create();
@@ -943,4 +979,35 @@ std::shared_ptr<GParsingResult> GParser::makeScope() {
 		this->advance();
 	}
 	return res->success(std::shared_ptr<GNode>(new GScopeNode(path, pos)));
+}
+std::shared_ptr<GParsingResult> GParser::makeType() {
+	std::shared_ptr<GParsingResult> res = GParsingResult::create();
+	std::string name;
+	bool native = false;
+	if (this->token->type != GTokenType::IDENTIFIER) {
+		if (this->token->type != GTokenType::KEYWORD) {
+			return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Unexpected token '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+		}
+		std::vector<std::string> types = { "bool", "char", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "string", "complex" };
+		if (std::find(types.begin(), types.end(), this->token->value) == types.end()) {
+			return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_UNEXPECTED_TOKEN, "Unexpected token '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+		}
+		native = true;
+	}
+	std::shared_ptr<GPosition> pos = this->token->pos;
+	name = this->token->value;
+	this->advance();
+	// INFO: no generics in c++ compiler
+	// INFO: generics will be added when compiler will be rewritten in Garlic
+	int dimension = 0;
+	while (this->token->type == GTokenType::LBRACK) {
+		this->advance();
+		// INFO: array size will be implemented when compiler will be rewritten in Garlic
+		if (this->token->type != GTokenType::RBRACK) {
+			return res->failure(std::shared_ptr<GarlicError>(new GarlicError(GErrorCode::PARSER_EXPECT_RBRACK_FOR_ARRAY_DECLARATION, "Expected ']' but got '" + GToken::safeValue(this->token) + "'", this->token->pos)));
+		}
+		pos = GPosition::endsAt(pos, this->token->pos);
+		this->advance();
+	}
+	return res->success(std::shared_ptr<GNode>(new GTypeNode(name, native, dimension, {}, pos)));
 }

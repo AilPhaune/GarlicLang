@@ -20,11 +20,12 @@ struct GBracketOperatorNode;
 struct GDotAccessorNode;
 struct GIfStatementNode;
 struct GScopeNode;
+struct GVarDeclareNode;
 
 enum GNodeType {
 	NODE_UNKNOWN, NODE_BIN_OP, NODE_SETTER, NODE_UNARY_OP, NODE_COMP_OP, NODE_VALUE, NODE_IDENTIFIER, NODE_TUPLE, NODE_LIST,
 	NODE_NON_GARLIC, NODE_TERNARY, NODE_PARENTHESIS_OPERATOR, NODE_BRACKET_OPERATOR, NODE_DOT_ACCESSOR, NODE_IF_STATEMENT,
-	NODE_FOR_LOOP, NODE_WHILE_LOOP, NODE_DO_WHILE_LOOP, NODE_SCOPE
+	NODE_FOR_LOOP, NODE_WHILE_LOOP, NODE_DO_WHILE_LOOP, NODE_SCOPE, VAR_DECLARE_NODE, TYPE_NODE,
 };
 
 struct PrettyPrint {
@@ -250,6 +251,32 @@ struct GScopeNode : public GNode {
 		std::vector<std::string> scope;
 		GScopeNode(std::vector<std::string> scope, std::shared_ptr<GPosition> pos);
 		~GScopeNode();
+
+		GNodeType getType() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GVarDeclareNode : GNode {
+	public:
+		std::shared_ptr<GNode> type, value;
+		std::string name;
+		bool isConst;
+		GVarDeclareNode(std::shared_ptr<GNode> type, std::string name, bool isConst, std::shared_ptr<GNode> value, std::shared_ptr<GPosition> pos);
+		~GVarDeclareNode();
+
+		GNodeType getType() override;
+		std::shared_ptr<PrettyPrint> prettyPrint() override;
+};
+
+struct GTypeNode : GNode {
+	public:
+		std::string name;
+		bool native;
+		int arrayDimension;
+		std::vector<std::shared_ptr<GTypeNode>> generics;
+
+		GTypeNode(std::string name, bool native, int arrayDimension, std::vector<std::shared_ptr<GTypeNode>> generics, std::shared_ptr<GPosition> pos);
+		~GTypeNode();
 
 		GNodeType getType() override;
 		std::shared_ptr<PrettyPrint> prettyPrint() override;

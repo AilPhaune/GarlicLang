@@ -231,6 +231,17 @@ GDoWhileLoopNode::~GDoWhileLoopNode() {
 GScopeNode::GScopeNode(std::vector<std::string> scope, std::shared_ptr<GPosition> pos): scope(scope), GNode(pos) {}
 GScopeNode::~GScopeNode() {}
 
+GVarDeclareNode::GVarDeclareNode(std::shared_ptr<GNode> type, std::string name, bool isConst, std::shared_ptr<GNode> value, std::shared_ptr<GPosition> pos) :
+	type(type), name(name), isConst(isConst), value(value), GNode(pos) {}
+GVarDeclareNode::~GVarDeclareNode() {
+	this->type = nullptr;
+	this->value = nullptr;
+}
+
+GTypeNode::GTypeNode(std::string name, bool native, int arrayDimension, std::vector<std::shared_ptr<GTypeNode>> generics, std::shared_ptr<GPosition> pos):
+	name(name), native(native), arrayDimension(arrayDimension), generics(generics), GNode(pos) {}
+GTypeNode::~GTypeNode() {}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                       NODE TYPES                                                       //
@@ -309,4 +320,12 @@ GNodeType GDoWhileLoopNode::getType() {
 
 GNodeType GScopeNode::getType() {
 	return GNodeType::NODE_SCOPE;
+}
+
+GNodeType GVarDeclareNode::getType() {
+	return GNodeType::VAR_DECLARE_NODE;
+}
+
+GNodeType GTypeNode::getType() {
+	return GNodeType::TYPE_NODE;
 }

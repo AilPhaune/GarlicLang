@@ -211,3 +211,30 @@ std::shared_ptr<PrettyPrint> GScopeNode::prettyPrint() {
 		std::vector<std::shared_ptr<PrettyPrint>>()
 	));
 }
+
+std::shared_ptr<PrettyPrint> GVarDeclareNode::prettyPrint() {
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		(std::stringstream() << "DECLARE { " << this->name << " }").str(),
+		std::vector<std::shared_ptr<PrettyPrint>>({
+			this->type->prettyPrint(),
+			this->value->prettyPrint()
+		})
+	));
+}
+
+std::shared_ptr<PrettyPrint> GTypeNode::prettyPrint() {
+	std::stringstream str;
+	str << (this->native ? "NATIVE TYPE { " : "TYPE { ") << this->name << " ";
+	for (size_t i = 0; i < this->arrayDimension; i++) {
+		str << "[]";
+	}
+	str << " }";
+	std::vector<std::shared_ptr<PrettyPrint>> pp(this->generics.size());
+	for (size_t i = 0; i < this->generics.size(); i++) {
+		pp[i] = this->generics[i]->prettyPrint();
+	}
+	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
+		str.str(),
+		pp
+	));
+}
