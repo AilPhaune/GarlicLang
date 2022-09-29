@@ -55,8 +55,7 @@ std::cout << s << std::endl;
 - Assignment and multi-assignment (assignment of multiple variables and multiple values)
 - If, Else, Else If statements
 - For, While and Do While loops
-
-**[x] Variable declaration**
+- Variable declaration
 
 **[x] Class, Interface, Enum, Annotation declaration**
 
