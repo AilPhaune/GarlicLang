@@ -1,5 +1,6 @@
 #include <memory>
 #include <sstream>
+#include <iostream>
 #include "../SymbolTable.h"
 
 Symbol::Symbol(std::string name, size_t id, SymbolType type, std::shared_ptr<SymbolBranch> branch, std::shared_ptr<SymbolBranch> innerBranch, std::shared_ptr<SymbolTable> table):
@@ -71,7 +72,7 @@ std::shared_ptr<SymbolResult> SymbolResult::create() {
 	return std::shared_ptr<SymbolResult>(new SymbolResult());
 }
 
-SymbolAnalyzer::SymbolAnalyzer(): table(std::shared_ptr<SymbolTable>(new SymbolTable())) {}
+SymbolAnalyzer::SymbolAnalyzer(): table(std::shared_ptr<SymbolTable>(new SymbolTable())), m_Queue(std::vector<std::shared_ptr<GNode>>()) {}
 SymbolAnalyzer::~SymbolAnalyzer() {
 	this->table = nullptr;
 }
@@ -115,6 +116,41 @@ std::shared_ptr<SymbolResult> SymbolAnalyzer::analyzeReferences(std::shared_ptr<
 	if (nde->getType() == GNodeType::NODE_BIN_OP) {
 		GBinOpNode* n = (GBinOpNode*) nde;
 
+	}
+	return res;
+}
+void SymbolAnalyzer::queue(std::shared_ptr<GNode> ast) {
+	this->m_Queue.push_back(ast);
+}
+std::shared_ptr<Symbol> SymbolAnalyzer::define(const char* path, std::string name, SymbolType type, std::shared_ptr<SymbolBranch> innerBranch) {
+	std::cout << "SymbolTable::define not implemented" << std::endl;
+	return nullptr;
+}
+std::shared_ptr<SymbolResult> SymbolAnalyzer::findSymbols() {
+	auto it = m_Queue.begin();
+	std::shared_ptr<SymbolResult> res = std::shared_ptr<SymbolResult>(new SymbolResult());
+	while(it != m_Queue.end()) {
+		res->reg(this->analyzeDeclarations(*it, this->table->root));
+		if(res->error) {
+			return res;
+		}
+		it++;
+	}
+	it = m_Queue.begin();
+	while(it != m_Queue.end()) {
+		res->reg(this->analyzeScopes(*it, this->table->root));
+		if(res->error) {
+			return res;
+		}
+		it++;
+	}
+	it = m_Queue.begin();
+	while(it != m_Queue.end()) {
+		res->reg(this->analyzeReferences(*it, this->table->root));
+		if(res->error) {
+			return res;
+		}
+		it++;
 	}
 	return res;
 }

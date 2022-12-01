@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include "Tokens.h"
 #include "Parser.h"
+#include "SymbolTable.h"
 #include <cstdio>
 #include <cstring>
 
@@ -39,6 +40,55 @@ void print_help_cmd(const char* arg) {
         cout << "\t-" << iterator->first << generate_spaces(TARGET_SPACE_LENGTH - iterator->first.size()) << iterator->second << endl;
         iterator++;
     }
+}
+
+shared_ptr<GParsingResult> parseFile(string inputfile, bool raw) {
+    // read content from file
+    FILE *file = fopen(inputfile.c_str(), "rb");
+    fseek(file, 0, SEEK_END);
+    auto size = ftell(file);
+    char* content = new char[size];
+    fseek(file, 0, SEEK_SET);
+    fread(content, 1, size, file);
+    fclose(file);
+
+    /* DEBUG: cout << "File content:" << content << endl;*/
+    
+    // generate tokens from file
+    GLexer lexer(inputfile, content, size);
+    shared_ptr<GLexingResult> lexed = raw ? lexer.makeRawTokens() : lexer.makeTokens();
+
+    if (lexed->hasError()) {
+        cout << lexed->getError()->toString() << endl;
+        return nullptr;
+    }
+    
+    vector<shared_ptr<GToken>> tokens = lexed->getTokens();
+    // /* DEBUG:
+    size_t it = 0;
+    cout << "=== BEGIN TOKENS ===" << endl << "number of tokens: " << tokens.size() << endl;
+    while(it < tokens.size()) {
+        cout << tokens[it]->value << endl;
+        it++;
+    }
+    cout << "=== END TOKENS ===" << endl;
+    
+//      */
+
+    // parse the file
+    GParser parser(tokens);
+    shared_ptr<GParsingResult> ast = parser.parseAST();
+    if(ast->error) {
+        cout << ast->error->toString() << endl;
+        return nullptr;
+    }
+    ast->source = inputfile;
+
+    cout << GNode::toString(ast->node->prettyPrint(), 4) << endl << endl << endl;
+
+    // release memory
+    delete[] content;
+    return ast;
 }
 
 struct Arguments {
@@ -119,56 +169,17 @@ int main(int argc, const char * const *argv) {
         return -1;
     }
 
-    vector<shared_ptr<GParsingResult>> files;
+    shared_ptr<SymbolAnalyzer> symbol_analyzer = shared_ptr<SymbolAnalyzer>(new SymbolAnalyzer());
     size_t normal_files = args.input_files.size();
     size_t total_files = args.input_files.size() + args.input_raw_files.size();
     for(size_t i = 0; i < total_files; i++) {
         string inputfile = (i >= normal_files) ? args.input_raw_files.at(i - normal_files) : args.input_files.at(i);
-        // read content from file
-        FILE *file = fopen(inputfile.c_str(), "rb");
-        fseek(file, 0, SEEK_END);
-        auto size = ftell(file);
-        char* content = new char[size];
-        fseek(file, 0, SEEK_SET);
-        fread(content, 1, size, file);
-        fclose(file);
-
-        /* DEBUG: cout << "File content:" << content << endl;*/
-        
-        // generate tokens from file
-        GLexer lexer(inputfile, content, size);
-        shared_ptr<GLexingResult> lexed = (i >= normal_files) ? lexer.makeRawTokens() : lexer.makeTokens();
-
-        if (lexed->hasError()) {
-            cout << lexed->getError()->toString() << endl;
+        auto p = parseFile(inputfile, i >= normal_files);
+        if(p->error) {
+            cout << p->error->toString() << endl;
             return -2;
         }
-        
-        vector<shared_ptr<GToken>> tokens = lexed->getTokens();
-        // /* DEBUG:
-        size_t it = 0;
-        cout << "=== BEGIN TOKENS ===" << endl << "number of tokens: " << tokens.size() << endl;
-        while(it < tokens.size()) {
-            cout << tokens[it]->value << endl;
-            it++;
-        }
-        cout << "=== END TOKENS ===" << endl;
-        
-//      */
-
-        // parse the file
-        GParser parser(tokens);
-        shared_ptr<GParsingResult> ast = parser.parseAST();
-        if(ast->error) {
-            cout << ast->error->toString() << endl;
-            return -2;
-        }
-        ast->source = inputfile;
-        files.push_back(ast);
-
-        cout << GNode::toString(ast->node->prettyPrint(), 4) << endl << endl << endl;
-
-        // release memory
-        delete[] content;
+        symbol_analyzer->queue(p->node);
     }
+    std::shared_ptr<SymbolResult> res = symbol_analyzer->findSymbols();
 }

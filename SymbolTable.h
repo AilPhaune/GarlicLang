@@ -63,6 +63,8 @@ class SymbolResult : public std::enable_shared_from_this<SymbolResult> {
 };
 
 class SymbolAnalyzer {
+	private:
+		std::vector<std::shared_ptr<GNode>> m_Queue;
 	public:
 		std::shared_ptr<SymbolTable> table;
 
@@ -70,6 +72,9 @@ class SymbolAnalyzer {
 		~SymbolAnalyzer();
 
 		std::shared_ptr<SymbolResult> analyze(std::shared_ptr<GNode> ast);
+		void queue(std::shared_ptr<GNode> ast);
+		std::shared_ptr<Symbol> define(const char* path, std::string name, SymbolType type, std::shared_ptr<SymbolBranch> innerBranch);
+		std::shared_ptr<SymbolResult> findSymbols();
 	private:
 		std::shared_ptr<SymbolResult> analyzeDeclarations(std::shared_ptr<GNode> ast, std::shared_ptr<SymbolBranch> parent);
 		std::shared_ptr<SymbolResult> analyzeScopes(std::shared_ptr<GNode> ast, std::shared_ptr<SymbolBranch> parent);

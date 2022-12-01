@@ -213,8 +213,10 @@ std::shared_ptr<PrettyPrint> GScopeNode::prettyPrint() {
 }
 
 std::shared_ptr<PrettyPrint> GVarDeclareNode::prettyPrint() {
+	std::stringstream ss;
+	ss << "DECLARE { " << this->name << " }";
 	return std::shared_ptr<PrettyPrint>(new PrettyPrint(
-		(std::stringstream() << "DECLARE { " << this->name << " }").str(),
+		ss.str(),
 		std::vector<std::shared_ptr<PrettyPrint>>({
 			this->type->prettyPrint(),
 			this->value->prettyPrint()
