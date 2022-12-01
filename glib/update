@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+from glob import glob
+
+files = glob("../*.h")
+
+includes = []
+top_declarations = []
+h_code = []
+
+for file in files:
+    with open(file) as f:
+        for line in f:
+            code = line.strip()
+            if code == "#pragma once" or len(code) == 0 or code.startswith("//"):
+                continue
+            if (code.startswith("class") or code.startswith("interface") or code.startswith("struct") or code.startswith("enum")) and code.endswith(";"):
+                top_declarations.append(code)
+                continue
+            if code.startswith("#include "):
+                inc = code[9::].strip()
+                if inc[0] == "<":
+                    if inc in includes:
+                        continue
+                    includes.append(inc[0:inc.index('>')+1:])
+                    continue
+                inc = inc[1::]
+                inc = inc[0:inc.index('"'):]
+                print(inc)
+                if ("../" + inc) not in files and inc not in includes:
+                    includes.append(inc)
+                continue
+            h_code.append(code)
+
+with open("glib.h", "w") as f:
+    f.write("#pragma once\n")
+    for inc in includes:
+        f.write("#include " + inc + "\n")
+    
+    for dec in top_declarations:
+        f.write(dec + "\n")
+    
+    indent = 0
+    for code in h_code:
+        f.write(code + "\n")

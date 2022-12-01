@@ -1,10 +1,12 @@
 CC			=g++
+LD			=ld
 CPPFLAGS	=
 CXXFLAGS	=
 LDFLAGS		=
+LIBLDFLAGS  =-relocatable
 
 LIB_SOURCE = $(wildcard src/*.cpp)
-LIB_OBJ = $(patsubst %.cpp,obj/%.o,$(COMPILER_SOURCE))
+LIB_OBJ = $(patsubst %.cpp,obj/%.o,$(LIB_SOURCE))
 
 COMPILER_SOURCE = GarlicCompiler.cpp $(LIB_SOURCE)
 COMPILER_OBJ = $(patsubst %.cpp,obj/%.o,$(COMPILER_SOURCE))
@@ -15,9 +17,8 @@ gcompiler: $(COMPILER_OBJ)
 	@$(CC) $(LDFLAGS) -o $@ $^
 	@echo "Built: $@"
 
-glib.o: $(LIB_SOURCE)
-	@echo $(LIB_OBJ)
-	$(CC) $(LDFLAGS) -c -o $@ $^
+glib.o: $(LIB_OBJ)
+	$(LD) $(LIBLDFLAGS) -o $@ $^
 	@echo "Built: $@"
 
 obj/%.o: %.cpp
